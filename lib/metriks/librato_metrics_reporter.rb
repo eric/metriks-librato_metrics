@@ -84,7 +84,7 @@ module Metriks
       time = @time_tracker.now_floored
 
       @registry.each do |name, metric|
-        next if name.nil? || name.blank?
+        next if name.nil? || name.empty?
         name = name.to_s.gsub(/ +/, '_')
 
         if prefix
