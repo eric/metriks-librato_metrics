@@ -1,5 +1,5 @@
-require 'metriks/reporter/librato_metrics'
+require 'metriks/librato_metrics_reporter'
 
 module MetriksLibratoMetrics
-  VERSION = '1.0.0'
+  VERSION = '1.0.1'
 end
