@@ -105,10 +105,6 @@ module Metriks
         next if name.nil? || name.empty?
         name = name.to_s.gsub(/ +/, '_')
 
-        if prefix
-          name = "#{prefix}.#{name}"
-        end
-
         case metric
         when Metriks::Meter
           count = metric.count
