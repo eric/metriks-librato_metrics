@@ -94,7 +94,7 @@ module Metriks
       else
         res.error!
       end
-
+    ensure
       @data.clear
     end
 
