@@ -3,6 +3,20 @@ require 'net/https'
 
 module Metriks
   class LibratoMetricsReporter
+
+    class RequestFailedError < StandardError
+      attr_reader :req, :res, :data
+
+      def initialize(req, res, data = nil)
+        @req, @res = req, res
+        @data = data
+      end
+
+      def to_s
+        res.code + ' ' + res.message.dump
+      end
+    end
+
     attr_accessor :prefix, :source, :data
 
     def initialize(email, token, options = {})
@@ -92,7 +106,7 @@ module Metriks
       when Net::HTTPSuccess, Net::HTTPRedirection
         # OK
       else
-        res.error!
+        raise RequestFailedError.new(req, res, @data.dup)
       end
     ensure
       @data.clear
