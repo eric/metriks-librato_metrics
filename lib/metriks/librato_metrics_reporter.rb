@@ -3,20 +3,6 @@ require 'net/https'
 
 module Metriks
   class LibratoMetricsReporter
-
-    class RequestFailedError < StandardError
-      attr_reader :req, :res, :data
-
-      def initialize(req, res, data = nil)
-        @req, @res = req, res
-        @data = data
-      end
-
-      def to_s
-        res.code + ' ' + res.message.dump
-      end
-    end
-
     attr_accessor :prefix, :source, :data
 
     def initialize(email, token, options = {})
@@ -118,6 +104,10 @@ module Metriks
       @registry.each do |name, metric|
         next if name.nil? || name.empty?
         name = name.to_s.gsub(/ +/, '_')
+        if name =~ /[^.:_\-0-9a-zA-Z]/ || name.size > 255
+          raise InvalidKeyError, "Librato metric names must match " \
+            "/[.:_\-0-9a-zA-Z]+/, and must be less than 255 characters."
+        end
 
         case metric
         when Metriks::Meter
@@ -185,5 +175,21 @@ module Metriks
         end
       end
     end
+
+    class InvalidKeyError < StandardError; end
+
+    class RequestFailedError < StandardError
+      attr_reader :req, :res, :data
+
+      def initialize(req, res, data = nil)
+        @req, @res = req, res
+        @data = data
+      end
+
+      def to_s
+        res.code + ' ' + res.message.dump
+      end
+    end
+
   end
 end

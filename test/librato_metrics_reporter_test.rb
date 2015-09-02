@@ -37,4 +37,15 @@ class LibratoMetricsReporterTest < Test::Unit::TestCase
     @reporter.expects(:submit).never
     @reporter.write
   end
+
+  def test_raises_on_invalid_keys
+    err = Metriks::LibratoMetricsReporter::InvalidKeyError
+    %w[invalid.utf8—key invalid.ascii?key invalid.punctuation/key].each do |key|
+      assert_raise(err, "error on invalid key #{key}") do
+        @registry.counter(key)
+        @reporter.write
+      end
+    end
+  end
+
 end
