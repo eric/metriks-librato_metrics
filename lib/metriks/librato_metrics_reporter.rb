@@ -16,6 +16,7 @@ module Metriks
       @interval     = options[:interval] || 60
       @time_tracker = Metriks::TimeTracker.new(@interval)
       @on_error     = options[:on_error] || proc { |ex| }
+      @sanitizer    = options[:sanitize] || proc { |key| key.to_s.gsub(/ +/, '_') }
 
       @data = {}
       @sent = {}
@@ -103,11 +104,7 @@ module Metriks
 
       @registry.each do |name, metric|
         next if name.nil? || name.empty?
-        name = name.to_s.gsub(/ +/, '_')
-        if name =~ /[^.:_\-0-9a-zA-Z]/ || name.size > 255
-          raise InvalidKeyError, "Librato metric names must match " \
-            "/[.:_\-0-9a-zA-Z]+/, and must be less than 255 characters."
-        end
+        name = sanitize_name(name)
 
         case metric
         when Metriks::Meter
@@ -173,6 +170,25 @@ module Metriks
         attributes.each do |k, v|
           @data["gauges[#{idx}][attributes][#{k}]"] = v
         end
+      end
+    end
+
+    def sanitize_name(name)
+      case @sanitizer
+      when String
+        return name.gsub(/[^.:_\-0-9a-zA-Z]/, @sanitizer)[0...255]
+      when Proc
+        sanitized = @sanitizer.call(name)
+      else
+        raise RuntimeError, "The :sanitize option must be a replacement " \
+          "string or a Proc that will be passed the metric name to sanitize."
+      end
+
+      if sanitized.size > 255 || sanitized =~ /[^.:_\-0-9a-zA-Z]/
+        raise InvalidKeyError, "Librato metric names must match " \
+          "/[.:_\-0-9a-zA-Z]+/, and must be less than 255 characters."
+      else
+        sanitized
       end
     end
 
