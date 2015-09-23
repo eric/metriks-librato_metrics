@@ -37,4 +37,39 @@ class LibratoMetricsReporterTest < Test::Unit::TestCase
     @reporter.expects(:submit).never
     @reporter.write
   end
+
+  def test_raises_on_invalid_keys
+    err = Metriks::LibratoMetricsReporter::InvalidKeyError
+    %w[invalid.utf8—key invalid.ascii?key invalid.punctuation/key].each do |key|
+      assert_raise(err, "error on invalid key #{key}") do
+        @registry.counter(key)
+        @reporter.write
+      end
+    end
+  end
+
+  def test_sanitizes_by_string
+    @reporter = build_reporter(:sanitize => ".")
+    @registry.counter("invalid.ascii?key")
+    @reporter.expects(:submit)
+    @reporter.write
+    assert_equal(@reporter.data["gauges[0][name]"], "invalid.ascii.key")
+  end
+
+  def test_sanitizes_by_proc
+    @reporter = build_reporter(:sanitize => Proc.new { |key| "bats" })
+    @registry.counter("invalid.ascii?key")
+    @reporter.expects(:submit)
+    @reporter.write
+    assert_equal(@reporter.data["gauges[0][name]"], "bats")
+  end
+
+  def test_raises_on_invalid_sanitized_key
+    @reporter = build_reporter(:sanitize => Proc.new { |key| "bats" * 100 })
+    assert_raise Metriks::LibratoMetricsReporter::InvalidKeyError do
+      @registry.counter("invalid.ascii?key")
+      @reporter.write
+    end
+  end
+
 end
