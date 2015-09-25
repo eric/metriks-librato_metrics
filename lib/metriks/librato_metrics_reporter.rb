@@ -17,6 +17,7 @@ module Metriks
       @time_tracker = Metriks::TimeTracker.new(@interval)
       @on_error     = options[:on_error] || proc { |ex| }
       @sanitizer    = options[:sanitize] || proc { |key| key.to_s.gsub(/ +/, '_') }
+      @timeout      = options[:timeout]  || 10
 
       @data = {}
       @sent = {}
