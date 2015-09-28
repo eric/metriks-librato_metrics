@@ -83,12 +83,15 @@ module Metriks
       req.basic_auth(@email, @token)
       req.set_form_data(@data)
 
-      http = Net::HTTP.new(url.host, url.port)
-      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      http.use_ssl = true
       store = OpenSSL::X509::Store.new
       store.set_default_paths
-      http.cert_store = store
+
+      http              = Net::HTTP.new(url.host, url.port)
+      http.verify_mode  = OpenSSL::SSL::VERIFY_PEER
+      http.use_ssl      = true
+      http.open_timeout = @timeout
+      http.read_timeout = @timeout
+      http.cert_store   = store
 
       case res = http.start { |http| http.request(req) }
       when Net::HTTPSuccess, Net::HTTPRedirection
