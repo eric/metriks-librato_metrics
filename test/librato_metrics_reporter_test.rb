@@ -88,6 +88,6 @@ class LibratoMetricsReporterTest < Test::Unit::TestCase
     @reporter.expects(:submit)
     @reporter.write
 
-    assert @reporter.data.detect { |(k,v)| k =~ /gauges\[\d+\]\[source\]/ && v = "localhost " }
+    assert @reporter.data.detect { |(k,v)| k =~ /gauges\[\d+\]\[source\]/ && v == "localhost" }
   end
 end
