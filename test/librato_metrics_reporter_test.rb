@@ -72,4 +72,22 @@ class LibratoMetricsReporterTest < Test::Unit::TestCase
     end
   end
 
+  def test_write_with_source_unset
+    @registry.meter('meter.testing').mark
+
+    @reporter.expects(:submit)
+    @reporter.write
+
+    assert @reporter.data.none? { |(k,v)| k =~ /gauges\[\d+\]\[source\]/ }
+  end
+
+  def test_write_with_source_set
+    @reporter = build_reporter(:source => "localhost")
+    @registry.meter('meter.testing').mark
+
+    @reporter.expects(:submit)
+    @reporter.write
+
+    assert @reporter.data.detect { |(k,v)| k =~ /gauges\[\d+\]\[source\]/ && v = "localhost " }
+  end
 end
