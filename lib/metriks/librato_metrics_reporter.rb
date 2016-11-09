@@ -161,9 +161,12 @@ module Metriks
       end
 
       @data["gauges[#{idx}][name]"]         = name
-      @data["gauges[#{idx}][source]"]       = @source
       @data["gauges[#{idx}][measure_time]"] = time.to_i
       @data["gauges[#{idx}][value]"]        = value
+
+      unless @source.to_s.empty?
+        @data["gauges[#{idx}][source]"] = @source
+      end
 
       unless @sent[name]
         @sent[name] = true
